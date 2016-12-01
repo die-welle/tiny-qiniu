@@ -1,0 +1,14 @@
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.log
+*.log
+logs
+node_modules
+dist
+lib
+qiniu.config.json
