@@ -27,7 +27,7 @@ $ yarn add tiny-qiniu
 
 ## Usage
 
-### constructor(options)
+### TinyQiniu#constructor(options)
 
 #### Exapmle
 
@@ -58,29 +58,35 @@ const config = {
 const tinyQiniu = new TinyQiniu(config);
 ```
 
-### tinyQiniu.uploadFile(file, options)
+### TinyQiniu#uploadFile(file[, options])
+
+Upload with a file object. You can also provide a remote file name by adding `options.key` as the second argument. Returns a promise.
 
 #### Example
 
 ```js
 var file = document.querySelector('#fileInput').files[0];
-tinyQiniu.uploadFile(file, { key: 'my_file_name' });
+tinyQiniu.uploadFile(file, { key: 'my_file_name' }).then((resp) => console.log(resp.url));
 ```
 
-### tinyQiniu.uploadBase64(base64String, options)
+### TinyQiniu#uploadBase64(base64String[, options])
+
+Upload with a base64 string. You can also provide a remote file name by adding `options.base64key` as the second argument. Returns a promise.
+
+**NOTE** `base64key` should provide a base64 string. You can use `btoa()` or some other library to generate it.
 
 #### Exapmle
 
 ```js
 const base64Key = btoa('my_file_name');
-tinyQiniu.uploadBase64(base64String, { base64key });
+tinyQiniu.uploadBase64(base64String, { base64key }).then((resp) => console.log(resp.url));
 ```
 
 ## Testing
 
 For more usage, please check the `./test` directory, or clone this repo and run `npm test` to start testing.
 
-**IMPORT** Before run `npm test`, you should create a `qiniu.config.json` on `test` directory with the following content:
+**IMPORTANT** Before run `npm test`, you should create a `qiniu.config.json` on `test` directory with the following example content:
 
 ```json
 {
