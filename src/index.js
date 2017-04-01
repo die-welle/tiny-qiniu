@@ -4,7 +4,8 @@ const isFunction = (value) => {
 	return typeof value === 'function';
 };
 
-const UPLOAD_URL = '//upload.qiniu.com';
+const isHttps = window.location.protocol.toLowerCase() === 'https:';
+const UPLOAD_URL = isHttps ? '//up.qbox.me' : '//upload.qiniu.com';
 
 const checkConfig = (config) => {
 	const { uptoken, uptokenUrl, uptokenFunc, domain, name } = config;
