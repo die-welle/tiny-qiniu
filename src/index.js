@@ -4,7 +4,7 @@ const isFunction = (value) => {
 	return typeof value === 'function';
 };
 
-const UPLOAD_URL = 'http://upload.qiniu.com';
+const UPLOAD_URL = '//upload.qiniu.com';
 
 const checkConfig = (config) => {
 	const { uptoken, uptokenUrl, uptokenFunc, domain, name } = config;
