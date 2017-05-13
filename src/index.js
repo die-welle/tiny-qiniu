@@ -1,13 +1,24 @@
 import 'isomorphic-fetch';
 
-const isFunction = (value) => {
-	return typeof value === 'function';
+const isFunction = (value) => typeof value === 'function';
+const isUndefined = (value) => typeof value === 'undefined';
+
+let uploadURL;
+
+const getUploadURL = (config) => {
+	if (uploadURL) { return uploadURL; }
+
+	let isHTTPS = true;
+	if (!isUndefined(config.isHTTPS)) { isHTTPS = !!config.isHTTPS; }
+	else {
+		try { isHTTPS = window.location.protocol.toLowerCase() === 'https:'; }
+		catch (err) {} // eslint-disable-line
+	}
+	uploadURL = isHTTPS ? '//up.qbox.me' : '//upload.qiniu.com';
+	return uploadURL;
 };
 
-const isHttps = window.location.protocol.toLowerCase() === 'https:';
-const UPLOAD_URL = isHttps ? '//up.qbox.me' : '//upload.qiniu.com';
-
-const checkConfig = (config) => {
+const validateConfig = (config) => {
 	const { uptoken, uptokenUrl, uptokenFunc, domain, name } = config;
 	if (!name) {
 		throw new Error('name is required');
@@ -25,30 +36,35 @@ const generateToken = async ({ uptoken, uptokenUrl, uptokenFunc }) => {
 		return uptoken;
 	}
 	else if (uptokenUrl) {
-		const resp = await fetch(uptokenUrl, {
-			method: 'GET',
-		}).then((res) => res.json());
-		return resp.uptoken;
+		const res = await fetch(uptokenUrl);
+		const data = await res.json();
+		return data.uptoken;
 	}
 	else if (uptokenFunc) {
 		if (!isFunction(uptokenFunc)) {
 			throw new Error('uptokenFunc should be a function');
 		}
-		else {
-			return await uptokenFunc();
-		}
+		return uptokenFunc();
 	}
 };
 
+const responseURL = (config, data) => {
+	if (data.error) {
+		throw new Error(data.error);
+	}
+	const { domain } = config;
+	const { hash, key } = data;
+	const id = key ? key : hash;
+	return { url: `${domain}/${id}` };
+};
 
-class TinyQiniu {
+export default class TinyQiniu {
 	constructor(config = {}) {
-		checkConfig(config);
+		validateConfig(config);
 		this._config = config;
 	}
 
 	async uploadFile(file, options = {}) {
-		const { domain } = this._config;
 		const { key } = options;
 		const uptoken = await generateToken(this._config);
 		const formData = new FormData();
@@ -59,47 +75,34 @@ class TinyQiniu {
 			formData.append('key', key);
 		}
 
-		return fetch(UPLOAD_URL, {
+		const res = await fetch(getUploadURL(this._config), {
 			method: 'POST',
 			body: formData
-		})
-		.then((res) => res.json())
-		.then((data) => {
-			if (data.error) {
-				throw new Error(data.error);
-			}
-			const { hash, key } = data;
-			const id = key ? key : hash;
-			return { url: `${domain}/${id}` };
-		})
-		;
+		});
+
+		const data = await res.json();
+
+		return responseURL(this._config, data);
 	}
 
 	async uploadBase64(base64, options = {}) {
-		const { domain } = this._config;
 		const { base64Key } = options;
 		const uptoken = await generateToken(this._config);
-		let fetchUrl = `${UPLOAD_URL}/putb64/-1`;
+		let fetchUrl = `${getUploadURL(this._config)}/putb64/-1`;
 		if (base64Key) {
 			fetchUrl = `${fetchUrl}/key/${base64Key}`;
 		}
-		return fetch(fetchUrl, {
+
+		const res = await fetch(fetchUrl, {
 			method: 'POST',
 			headers: {
 				Authorization: `UpToken ${uptoken}`,
 			},
 			body: base64.split(',')[1],
-		})
-		.then((res) => res.json())
-		.then((data) => {
-			if (data.error) {
-				throw new Error(data.error);
-			}
-			const { hash, key } = data;
-			const id = key ? key : hash;
-			return { url: `${domain}/${id}` };
-		})
-		;
+		});
+
+		const data = await res.json();
+
+		return responseURL(this._config, data);
 	}
 }
-export default TinyQiniu;
