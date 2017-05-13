@@ -165,6 +165,39 @@ const init = async () => {
 			assert.equal(img.type, imgInfo.format);
 		});
 
+		it('upload image file with `onProgress` option', async () => {
+			const { uptoken } = await fetch(`${host}/uptoken`, {
+				method: 'GET',
+			})
+			.then((res) => res.json());
+			config.uptoken = uptoken;
+			const configStr = JSON.stringify(config);
+			const selector = '#uploader';
+			await page.uploadFile(selector, imgFile);
+			let progressCalls = 0;
+			page.on('onCallback', (data) => {
+				if (data.msg === 'onProgress') { progressCalls++; }
+			});
+			const { url } = await page.evaluatePromise(
+				`function () {
+					var tinyQiniu = new window.TinyQiniu(${configStr});
+					var file = document.querySelector("${selector}").files[0];
+					return tinyQiniu.uploadFile(file, {
+						onProgress: function (ev) {
+							if (typeof window.callPhantom === 'function') {
+								window.callPhantom({ msg: 'onProgress' });
+							}
+						}
+					});
+				}`
+			);
+			const imgInfo = await fetch(`${url}?imageInfo`).then((res) => res.json());
+			assert(progressCalls > 0);
+			assert.equal(img.width, imgInfo.width);
+			assert.equal(img.height, imgInfo.height);
+			assert.equal(img.type, imgInfo.format);
+		});
+
 		after(() => {
 			closePage();
 			stopServer();

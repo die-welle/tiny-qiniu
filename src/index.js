@@ -1,9 +1,27 @@
-import 'isomorphic-fetch';
 
 const isFunction = (value) => typeof value === 'function';
 const isUndefined = (value) => typeof value === 'undefined';
 
 let uploadURL;
+
+const fetch = function fetch(url, options = {}, onProgress) {
+	return new Promise((resolve, reject) => {
+		const xhr = new XMLHttpRequest();
+		xhr.open(options.method || 'get', url);
+		Object.keys(options.headers || {}).forEach((key) => {
+			xhr.setRequestHeader(key, options.headers[key]);
+		});
+		xhr.onload = (ev) => {
+			try { resolve(JSON.parse(ev.target.responseText)); }
+			catch (err) { reject(err); }
+		};
+		xhr.onerror = reject;
+		if (xhr.upload && onProgress) {
+			xhr.upload.onprogress = onProgress;
+		}
+		xhr.send(options.body);
+	});
+};
 
 const getUploadURL = (config) => {
 	if (uploadURL) { return uploadURL; }
@@ -29,6 +47,7 @@ const validateConfig = (config) => {
 	else if (!uptoken && !uptokenUrl && !uptokenFunc) {
 		throw new Error('one of uptoken, uptokenUrl, uptokenFunc is required');
 	}
+	return config;
 };
 
 const generateToken = async ({ uptoken, uptokenUrl, uptokenFunc }) => {
@@ -36,8 +55,7 @@ const generateToken = async ({ uptoken, uptokenUrl, uptokenFunc }) => {
 		return uptoken;
 	}
 	else if (uptokenUrl) {
-		const res = await fetch(uptokenUrl);
-		const data = await res.json();
+		const data = await fetch(uptokenUrl);
 		return data.uptoken;
 	}
 	else if (uptokenFunc) {
@@ -60,12 +78,11 @@ const responseURL = (config, data) => {
 
 export default class TinyQiniu {
 	constructor(config = {}) {
-		validateConfig(config);
-		this._config = config;
+		this._config = validateConfig(config);
 	}
 
 	async uploadFile(file, options = {}) {
-		const { key } = options;
+		const { key, onProgress } = options;
 		const uptoken = await generateToken(this._config);
 		const formData = new FormData();
 		formData.append('token', uptoken);
@@ -75,12 +92,10 @@ export default class TinyQiniu {
 			formData.append('key', key);
 		}
 
-		const res = await fetch(getUploadURL(this._config), {
+		const data = await fetch(getUploadURL(this._config), {
 			method: 'POST',
 			body: formData
-		});
-
-		const data = await res.json();
+		}, onProgress);
 
 		return responseURL(this._config, data);
 	}
@@ -93,15 +108,13 @@ export default class TinyQiniu {
 			fetchUrl = `${fetchUrl}/key/${base64Key}`;
 		}
 
-		const res = await fetch(fetchUrl, {
+		const data = await fetch(fetchUrl, {
 			method: 'POST',
 			headers: {
 				Authorization: `UpToken ${uptoken}`,
 			},
 			body: base64.split(',')[1],
 		});
-
-		const data = await res.json();
 
 		return responseURL(this._config, data);
 	}
