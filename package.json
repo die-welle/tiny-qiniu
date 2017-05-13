@@ -36,6 +36,7 @@
     "eslint-plugin-babel": "^3.3.0",
     "eslint-plugin-import": "^2.2.0",
     "image-size": "^0.5.0",
+    "isomorphic-fetch": "^2.2.1",
     "mkdirp": "^0.5.1",
     "mocha": "^3.1.2",
     "phantom": "^3.0.2",
@@ -45,7 +46,5 @@
     "webpack": "v2.1.0-beta.25",
     "webpack-dev-server": "2.1.0-beta.9"
   },
-  "dependencies": {
-    "isomorphic-fetch": "^2.2.1"
-  }
+  "dependencies": {}
 }
