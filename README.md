@@ -49,7 +49,7 @@ const config = {
     // or use a function to dynamically return an uptoken string.
     uptokenFunc: () => {
         const fakeFetch = () => new Promise((resolve) => {
-            setTimeout(() => resolve({ uptoken: 'my_uptoken' }), 1000)
+            setTimeout(() => resolve('my_uptoken'), 1000)
         });
 
         return fakeFetch('/fake/api'); // return a promise
