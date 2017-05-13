@@ -62,6 +62,11 @@ const tinyQiniu = new TinyQiniu(config);
 
 Upload with a file object. You can also provide a remote file name by adding `options.key` as the second argument. Returns a promise.
 
+###### options (Object)
+
+- `key` (String): Remote file name
+- `onProgress` (Function): The function called periodically with information when an [upload request](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequestEventTarget/onprogress) before success completely.
+
 #### Example
 
 ```js
