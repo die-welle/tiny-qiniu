@@ -8,8 +8,9 @@ A tiny qiniu sdk for uploading file. (browser only)
 
 ## Requirements
 
-- Qiniu developer account.
-- Promise polyfill for old version browser.
+- Qiniu developer account
+- Promise polyfill for old version browser
+
 
 ## Installing
 
@@ -40,7 +41,7 @@ const config = {
 
     /* one of `uptoken`, `uptokenUrl`, `uptokenFunc` is required */
 
-    // use a static uptoken string
+    // use a static uptoken string, it's NOT recommended
     uptoken: 'your_upload_token',
 
     // or use a url to dynamically get an uptoken, should return json with `{ uptoken: 'uptoken_from_server' }`
@@ -87,6 +88,12 @@ const base64Key = btoa('my_file_name');
 tinyQiniu.uploadBase64(base64String, { base64key }).then((resp) => console.log(resp.url));
 ```
 
+## Notes
+
+- It is recommended to setup a server to get `uptoken` for security. To setup a `uptoken` server, please checkout [/test/server](/test/server.js)
+- If you are looking for a react component, [tiny-qiniu-request](https://github.com/die-welle/tiny-qiniu-request) is a good helper
+
+
 ## Testing
 
 For more usage, please check the `./test` directory, or clone this repo and run `npm test` to start testing.
@@ -101,6 +108,7 @@ For more usage, please check the `./test` directory, or clone this repo and run 
   "domain": "<Your qiniu bucket domain>"
 }
 ```
+
 
 ## License
 
