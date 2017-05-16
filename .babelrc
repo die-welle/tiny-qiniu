@@ -1,6 +1,6 @@
 {
 	"presets": [
-		"stage-0",
+		"stage-0-without-async",
 	],
 	"plugins": [
 		["transform-es2015-destructuring", { loose: false }],
@@ -13,7 +13,9 @@
 				["es2015", { "modules": false }],
 				"stage-0",
 			],
-			"plugins": ["add-module-exports"]
+			"plugins": [
+				"add-module-exports",
+			]
 		},
 	}
 }

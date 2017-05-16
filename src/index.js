@@ -50,19 +50,18 @@ const validateConfig = (config) => {
 	return config;
 };
 
-const generateToken = async ({ uptoken, uptokenUrl, uptokenFunc }) => {
+const generateToken = ({ uptoken, uptokenUrl, uptokenFunc }) => {
 	if (uptoken) {
-		return uptoken;
+		return Promise.resolve(uptoken);
 	}
 	else if (uptokenUrl) {
-		const data = await fetch(uptokenUrl);
-		return data.uptoken;
+		return fetch(uptokenUrl).then((data) => data.uptoken);
 	}
 	else if (uptokenFunc) {
 		if (!isFunction(uptokenFunc)) {
 			throw new Error('uptokenFunc should be a function');
 		}
-		return uptokenFunc();
+		return Promise.resolve(uptokenFunc());
 	}
 };
 
@@ -81,41 +80,44 @@ export default class TinyQiniu {
 		this._config = validateConfig(config);
 	}
 
-	async uploadFile(file, options = {}) {
+	uploadFile(file, options = {}) {
 		const { key, onProgress } = options;
-		const uptoken = await generateToken(this._config);
-		const formData = new FormData();
-		formData.append('token', uptoken);
-		formData.append('file', file);
+		return generateToken(this._config)
+			.then((uptoken) => {
+				const formData = new FormData();
+				formData.append('token', uptoken);
+				formData.append('file', file);
 
-		if (key) {
-			formData.append('key', key);
-		}
+				if (key) {
+					formData.append('key', key);
+				}
 
-		const data = await fetch(getUploadURL(this._config), {
-			method: 'POST',
-			body: formData
-		}, onProgress);
-
-		return responseURL(this._config, data);
+				return fetch(getUploadURL(this._config), {
+					method: 'POST',
+					body: formData
+				}, onProgress).then((data) => responseURL(this._config, data));
+			})
+		;
 	}
 
-	async uploadBase64(base64, options = {}) {
+	uploadBase64(base64, options = {}) {
 		const { base64Key } = options;
-		const uptoken = await generateToken(this._config);
-		let fetchUrl = `${getUploadURL(this._config)}/putb64/-1`;
-		if (base64Key) {
-			fetchUrl = `${fetchUrl}/key/${base64Key}`;
-		}
 
-		const data = await fetch(fetchUrl, {
-			method: 'POST',
-			headers: {
-				Authorization: `UpToken ${uptoken}`,
-			},
-			body: base64.split(',')[1],
-		});
+		return generateToken(this._config)
+			.then((uptoken) => {
+				let fetchUrl = `${getUploadURL(this._config)}/putb64/-1`;
+				if (base64Key) {
+					fetchUrl = `${fetchUrl}/key/${base64Key}`;
+				}
 
-		return responseURL(this._config, data);
+				return fetch(fetchUrl, {
+					method: 'POST',
+					headers: {
+						Authorization: `UpToken ${uptoken}`,
+					},
+					body: base64.split(',')[1],
+				}).then((data) => responseURL(this._config, data));
+			})
+		;
 	}
 }

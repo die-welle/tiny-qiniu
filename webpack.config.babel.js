@@ -67,7 +67,6 @@ export default (configEnv) => {
 		config.entry = {
 			test: [
 				'webpack-dev-server/client?http://127.0.0.1:' + port,
-				'babel-polyfill',
 				'./src/index.js',
 			],
 		};
