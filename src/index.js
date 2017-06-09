@@ -71,8 +71,7 @@ const responseURL = (config, data) => {
 	}
 	const { domain } = config;
 	const { hash, key } = data;
-	const id = key ? key : hash;
-	return { url: `${domain}/${id}` };
+	return { url: `${domain}/${key || hash}` };
 };
 
 export default class TinyQiniu {
@@ -92,9 +91,13 @@ export default class TinyQiniu {
 					formData.append('key', key);
 				}
 
+				console.log('scope', `${this._config.bucket}:${key}`);
+
+				formData.append('scope', `${this._config.bucket}:${key}`);
+
 				return fetch(getUploadURL(this._config), {
 					method: 'POST',
-					body: formData
+					body: formData,
 				}, onProgress).then((data) => responseURL(this._config, data));
 			})
 		;
