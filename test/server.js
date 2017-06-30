@@ -5,6 +5,10 @@ import cors from 'cors';
 import qiniu from 'qiniu';
 import { key, secret, bucket } from './qiniu.config.json';
 
+qiniu.conf.ACCESS_KEY = key;
+qiniu.conf.SECRET_KEY = secret;
+const putPolicy = new qiniu.rs.PutPolicy(bucket);
+
 const server = http.createServer((req, res) => {
 	const { method, url: reqURL } = req;
 	const { pathname } = url.parse(reqURL);
@@ -16,16 +20,10 @@ const server = http.createServer((req, res) => {
 
 	const routes = {
 		'GET /uptoken': () => {
-			qiniu.conf.ACCESS_KEY = key;
-			qiniu.conf.SECRET_KEY = secret;
-			const putPolicy = new qiniu.rs.PutPolicy(bucket);
 			const uptoken = putPolicy.token();
 			end({ uptoken });
 		},
 		'GET /uptoken/alt': () => {
-			qiniu.conf.ACCESS_KEY = key;
-			qiniu.conf.SECRET_KEY = secret;
-			const putPolicy = new qiniu.rs.PutPolicy(bucket);
 			const customUptokenName = putPolicy.token();
 			end({ customUptokenName });
 		},
