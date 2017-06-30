@@ -6,6 +6,7 @@ A tiny qiniu sdk for uploading file. (browser only)
 - No UI
 - Support upload base64 string
 
+
 ## Requirements
 
 - Qiniu developer account
@@ -26,6 +27,7 @@ Using yarn:
 $ yarn add tiny-qiniu
 ```
 
+
 ## Usage
 
 ### TinyQiniu#constructor(options)
@@ -36,18 +38,18 @@ $ yarn add tiny-qiniu
 import TinyQiniu from 'tiny-qiniu';
 
 const config = {
-    name: 'my_bucket', // qiniu bucket name, requried
-    domain: 'http://cdn.awesome.com', // qiniu bucket domain, requried
+    bucket: 'my_bucket', // qiniu bucket name, requried
+    baseURL: 'http://cdn.awesome.com', // qiniu bucket domain, requried
 
     /* one of `uptoken`, `uptokenUrl`, `uptokenFunc` is required */
 
     // use a static uptoken string, it's NOT recommended
     uptoken: 'your_upload_token',
 
-    // or use a url to dynamically get an uptoken, should return json with `{ uptoken: 'uptoken_from_server' }`
+    // or use an url to dynamically get uptoken, should return json with `{ uptoken: 'uptoken_from_server' }`
     uptokenUrl: 'http://localhost/api/uptoken',
 
-    // or use a function to dynamically return an uptoken string.
+    // or use a function to dynamically return uptoken string
     uptokenFunc: () => {
         const fakeFetch = () => new Promise((resolve) => {
             setTimeout(() => resolve('my_uptoken'), 1000)
@@ -55,6 +57,10 @@ const config = {
 
         return fakeFetch('/fake/api'); // return a promise
     },
+
+    mapUptoken: (data) => data.uptoken || data, // Optional, a function to map uptoken when fetch uptoken completed
+
+    mapResponseURL: (url, hash, key) => url, // Optional, a function to map final url
 };
 const tinyQiniu = new TinyQiniu(config);
 ```
@@ -102,10 +108,10 @@ For more usage, please check the `./test` directory, or clone this repo and run 
 
 ```json
 {
-  "key": "<Your qiniu AccessKey>",
-  "secret": "<Your qiniu SecretKey>",
+  "accessKey": "<Your qiniu AccessKey>",
+  "secretKey": "<Your qiniu SecretKey>",
   "bucket": "<Your qiniu bucket name>",
-  "domain": "<Your qiniu bucket domain>"
+  "baseURL": "<Your qiniu bucket baseURL>"
 }
 ```
 
