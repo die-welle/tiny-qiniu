@@ -22,6 +22,13 @@ const server = http.createServer((req, res) => {
 			const uptoken = putPolicy.token();
 			end({ uptoken });
 		},
+		'GET /uptoken/alt': () => {
+			qiniu.conf.ACCESS_KEY = key;
+			qiniu.conf.SECRET_KEY = secret;
+			const putPolicy = new qiniu.rs.PutPolicy(bucket);
+			const customUptokenName = putPolicy.token();
+			end({ customUptokenName });
+		},
 	};
 
 	const route = `${method} ${pathname}`;

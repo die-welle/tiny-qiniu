@@ -36,32 +36,64 @@ const getUploadURL = (config) => {
 	return uploadURL;
 };
 
+const defaultMapUptoken = (data) => (data.uptoken || data);
+const defaultMapResponseURL = (url) => ({ url });
+
 const validateConfig = (config) => {
-	const { uptoken, uptokenUrl, uptokenFunc, domain, name } = config;
-	if (!name) {
-		throw new Error('name is required');
+	const {
+		uptoken, uptokenUrl, uptokenFunc,
+
+		mapUptoken,
+		mapResponseURL,
+
+		bucket,
+		baseURL,
+
+		name, // deprecated
+		domain, // deprecated
+	} = config;
+
+	if (!bucket && !name) {
+		throw new Error('`bucket` is required');
 	}
-	else if (!domain) {
-		throw new Error('domain is required');
+
+	if (!baseURL && !domain) {
+		throw new Error('`baseURL` is required');
 	}
-	else if (!uptoken && !uptokenUrl && !uptokenFunc) {
-		throw new Error('one of uptoken, uptokenUrl, uptokenFunc is required');
+
+	if (!uptoken && !uptokenUrl && !uptokenFunc) {
+		throw new Error(
+			'One of `uptoken`, `uptokenUrl` or `uptokenFunc` is required'
+		);
 	}
+
+	if (uptokenFunc && !isFunction(uptokenFunc)) {
+		throw new Error('`UptokenFunc` must be a function');
+	}
+
+	if (!isFunction(mapUptoken)) {
+		config.mapUptoken = defaultMapUptoken;
+	}
+
+	if (!isFunction(mapResponseURL)) {
+		config.mapResponseURL = defaultMapResponseURL;
+	}
+
+	config.bucket = bucket || name;
+	config.baseURL = baseURL || domain;
+
 	return config;
 };
 
-const generateToken = ({ uptoken, uptokenUrl, uptokenFunc }) => {
+const generateToken = ({ uptoken, uptokenUrl, uptokenFunc, mapUptoken }) => {
 	if (uptoken) {
 		return Promise.resolve(uptoken);
 	}
 	else if (uptokenUrl) {
-		return fetch(uptokenUrl).then((data) => data.uptoken);
+		return fetch(uptokenUrl).then(mapUptoken);
 	}
 	else if (uptokenFunc) {
-		if (!isFunction(uptokenFunc)) {
-			throw new Error('uptokenFunc should be a function');
-		}
-		return Promise.resolve(uptokenFunc());
+		return Promise.resolve(mapUptoken(uptokenFunc()));
 	}
 };
 
@@ -69,9 +101,10 @@ const responseURL = (config, data) => {
 	if (data.error) {
 		throw new Error(data.error);
 	}
-	const { domain } = config;
+	const { baseURL, mapResponseURL } = config;
 	const { hash, key } = data;
-	return { url: `${domain}/${key || hash}` };
+	const url = `${baseURL}/${key || hash}`;
+	return mapResponseURL(url, hash, key);
 };
 
 export default class TinyQiniu {
@@ -90,8 +123,6 @@ export default class TinyQiniu {
 				if (key) {
 					formData.append('key', key);
 				}
-
-				console.log('scope', `${this._config.bucket}:${key}`);
 
 				formData.append('scope', `${this._config.bucket}:${key}`);
 

@@ -6,7 +6,7 @@ import { startServer, stopServer } from './server';
 import { startDevServer, stopDevServer } from './devServer';
 import assert from 'assert';
 import { join } from 'path';
-import { bucket, domain } from './qiniu.config.json';
+import { bucket, baseURL, name, domain } from './qiniu.config.json';
 import sizeOf from 'image-size';
 import fs from 'fs';
 
@@ -21,8 +21,8 @@ const init = async () => {
 
 	describe('qiniu-js', () => {
 		const config = {
-			name: bucket,
-			domain,
+			bucket: bucket || name,
+			baseURL: baseURL || domain,
 		};
 
 		it('upload image file', async () => {
@@ -193,6 +193,51 @@ const init = async () => {
 			);
 			const imgInfo = await fetch(`${url}?imageInfo`).then((res) => res.json());
 			assert(progressCalls > 0);
+			assert.equal(img.width, imgInfo.width);
+			assert.equal(img.height, imgInfo.height);
+			assert.equal(img.type, imgInfo.format);
+		});
+
+		it('mapUptoken', async () => {
+			config.uptokenUrl = `${host}/uptoken/alt`;
+			const selector = '#uploader';
+			const configStr = JSON.stringify(config);
+			await page.uploadFile(selector, imgFile);
+			const { url } = await page.evaluatePromise(
+				`function () {
+					var config = ${configStr};
+					config.mapUptoken = function mapUptoken(data) {
+						return data.customUptokenName;
+					};
+					var tinyQiniu = new window.TinyQiniu(config);
+					var file = document.querySelector("${selector}").files[0];
+					return tinyQiniu.uploadFile(file);
+				}`
+			);
+			const imgInfo = await fetch(`${url}?imageInfo`).then((res) => res.json());
+			assert.equal(img.width, imgInfo.width);
+			assert.equal(img.height, imgInfo.height);
+			assert.equal(img.type, imgInfo.format);
+		});
+
+		it('mapResponseURL', async () => {
+			config.uptokenUrl = `${host}/uptoken`;
+			const selector = '#uploader';
+			const configStr = JSON.stringify(config);
+			await page.uploadFile(selector, imgFile);
+			const { customUrlName } = await page.evaluatePromise(
+				`function () {
+					var config = ${configStr};
+					config.mapResponseURL = function mapResponseURL(url) {
+						return { customUrlName: url };
+					};
+					var tinyQiniu = new window.TinyQiniu(config);
+					var file = document.querySelector("${selector}").files[0];
+					return tinyQiniu.uploadFile(file);
+				}`
+			);
+			const imageInfoUrl = `${customUrlName}?imageInfo`;
+			const imgInfo = await fetch(imageInfoUrl).then((res) => res.json());
 			assert.equal(img.width, imgInfo.width);
 			assert.equal(img.height, imgInfo.height);
 			assert.equal(img.type, imgInfo.format);
