@@ -3,11 +3,10 @@ import http from 'http';
 import url from 'url';
 import cors from 'cors';
 import qiniu from 'qiniu';
-import { key, secret, bucket } from './qiniu.config.json';
+import { accessKey, secretKey, bucket } from './qiniu.config.json';
 
-qiniu.conf.ACCESS_KEY = key;
-qiniu.conf.SECRET_KEY = secret;
-const putPolicy = new qiniu.rs.PutPolicy(bucket);
+const mac = new qiniu.auth.digest.Mac(accessKey, secretKey);
+const putPolicy = new qiniu.rs.PutPolicy({ scope: bucket });
 
 const server = http.createServer((req, res) => {
 	const { method, url: reqURL } = req;
@@ -20,11 +19,11 @@ const server = http.createServer((req, res) => {
 
 	const routes = {
 		'GET /uptoken': () => {
-			const uptoken = putPolicy.token();
+			const uptoken = putPolicy.uploadToken(mac);
 			end({ uptoken });
 		},
 		'GET /uptoken/alt': () => {
-			const customUptokenName = putPolicy.token();
+			const customUptokenName = putPolicy.uploadToken(mac);
 			end({ customUptokenName });
 		},
 	};

@@ -41,7 +41,7 @@
     "mocha": "^3.1.2",
     "phantom": "^3.0.2",
     "phantom-page-promise": "^0.1.1",
-    "qiniu": "^6.1.13",
+    "qiniu": "^7.0.4",
     "rimraf": "^2.5.4",
     "webpack": "v2.1.0-beta.25",
     "webpack-dev-server": "2.1.0-beta.9"
