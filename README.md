@@ -49,6 +49,10 @@ const config = {
     // or use an url to dynamically get uptoken, should return json with `{ uptoken: 'uptoken_from_server' }`
     uptokenUrl: 'http://localhost/api/uptoken',
 
+    // save zone
+    // z0 - 华东, z1 - 华北, z2 - 华南, na0 - 北美
+    zone: 'z2',
+
     // or use a function to dynamically return uptoken string
     uptokenFunc: () => {
         const fakeFetch = () => new Promise((resolve) => {
@@ -111,10 +115,16 @@ For more usage, please check the `./test` directory, or clone this repo and run 
   "accessKey": "<Your qiniu AccessKey>",
   "secretKey": "<Your qiniu SecretKey>",
   "bucket": "<Your qiniu bucket name>",
-  "baseURL": "<Your qiniu bucket baseURL>"
+  "baseURL": "<Your qiniu bucket baseURL>",
+  "zone": "<Your qiniu save zone>"
 }
 ```
 
+## Change Log
+
+### `0.3.1`
+
+* add `zone` support
 
 ## License
 

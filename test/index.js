@@ -6,7 +6,7 @@ import { startServer, stopServer } from './server';
 import { startDevServer, stopDevServer } from './devServer';
 import assert from 'assert';
 import { join } from 'path';
-import { bucket, baseURL, name, domain } from './qiniu.config.json';
+import { bucket, baseURL, name, domain, zone } from './qiniu.config.json';
 import sizeOf from 'image-size';
 import fs from 'fs';
 
@@ -23,6 +23,7 @@ const init = async () => {
 		const config = {
 			bucket: bucket || name,
 			baseURL: baseURL || domain,
+			zone
 		};
 
 		it('upload image file', async () => {
