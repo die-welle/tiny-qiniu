@@ -115,26 +115,14 @@ Please checkout https://developer.qiniu.com/kodo/manual/1671/region-endpoint for
 - If you are looking for a react component, [tiny-qiniu-request](https://github.com/die-welle/tiny-qiniu-request) is a good helper
 
 
-## Testing
+## Contributing
 
-For more usage, please check the `./test` directory, or clone this repo and run `npm test` to start testing.
-
-**IMPORTANT** Before run `npm test`, you should create a `qiniu.config.json` on `test` directory with the following example content:
-
-```json
-{
-  "accessKey": "<Your qiniu AccessKey>",
-  "secretKey": "<Your qiniu SecretKey>",
-  "bucket": "<Your qiniu bucket name>",
-  "baseURL": "<Your qiniu bucket baseURL>",
-  "zone": "<Your qiniu save zone>"
-}
-```
+[Please checkout the contributing page](/CONTRIBUTING.md)
 
 
 ## ChangeLog
 
-[Please checkout the Releases page](/releases)
+[Please checkout the Releases page](https://github.com/die-welle/tiny-qiniu/releases)
 
 
 ## License
