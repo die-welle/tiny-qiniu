@@ -2,6 +2,7 @@
   "name": "tiny-qiniu",
   "version": "0.3.0",
   "description": "A tiny qiniu sdk for uploading file.",
+  "repository": "die-welle/tiny-qiniu",
   "scripts": {
     "prebuild": "rimraf dist lib",
     "build:cjs": "cross-env BABEL_ENV=cjs babel src -d lib",
@@ -16,6 +17,13 @@
   "author": [
     "cap32",
     "jc"
+  ],
+  "keywords": [
+    "qiniu",
+    "upload",
+    "bucket",
+    "cdn",
+    "base64"
   ],
   "license": "MIT",
   "devDependencies": {
