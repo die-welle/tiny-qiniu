@@ -2,6 +2,14 @@
 const isFunction = (value) => typeof value === 'function';
 const isUndefined = (value) => typeof value === 'undefined';
 
+// https://developer.qiniu.com/kodo/manual/1671/region-endpoint
+const zones = {
+	z0: 'upload.qiniup.com',
+	z1: 'upload-z1.qiniup.com',
+	z2: 'upload-z2.qiniup.com',
+	na0: 'upload-na0.qiniup.com'
+};
+
 let uploadURL;
 
 const fetch = function fetch(url, options = {}, onProgress) {
@@ -32,7 +40,13 @@ const getUploadURL = (config) => {
 		try { isHTTPS = window.location.protocol.toLowerCase() === 'https:'; }
 		catch (err) {} // eslint-disable-line
 	}
-	uploadURL = isHTTPS ? '//up.qbox.me' : '//upload.qiniu.com';
+
+	const protocol = isHTTPS ? 'https://' : 'http://';
+
+	// uploadURL = isHTTPS ? '//up.qbox.me' : '//upload.qiniu.com';
+	uploadURL = zones[config.zone];
+	uploadURL = `${protocol}${uploadURL || zones.z0}`;
+
 	return uploadURL;
 };
 
