@@ -50,7 +50,7 @@ const config = {
     uptokenUrl: 'http://localhost/api/uptoken',
 
     // save zone
-    // z0 - 华东, z1 - 华北, z2 - 华南, na0 - 北美
+    // z0 - 华东 (by default), z1 - 华北, z2 - 华南, na0 - 北美
     zone: 'z2',
 
     // or use a function to dynamically return uptoken string
@@ -98,6 +98,17 @@ const base64Key = btoa('my_file_name');
 tinyQiniu.uploadBase64(base64String, { base64key }).then((resp) => console.log(resp.url));
 ```
 
+
+## Available Zones
+
+- z0: `upload.qiniup.com` (default)
+- z1: `upload-z1.qiniup.com`
+- z2: `upload-z2.qiniup.com`
+- na0: `upload-na0.qiniup.com`
+
+Please checkout https://developer.qiniu.com/kodo/manual/1671/region-endpoint for detail
+
+
 ## Notes
 
 - It is recommended to setup a server to get `uptoken` for security. To setup a `uptoken` server, please checkout [/test/server](/test/server.js)
@@ -120,11 +131,11 @@ For more usage, please check the `./test` directory, or clone this repo and run 
 }
 ```
 
-## Change Log
 
-### `0.3.1`
+## ChangeLog
 
-* add `zone` support
+[Please checkout the Releases page](/releases)
+
 
 ## License
 
