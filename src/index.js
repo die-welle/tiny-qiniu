@@ -10,8 +10,6 @@ const zones = {
 	na0: 'upload-na0.qiniup.com'
 };
 
-let uploadURL;
-
 const fetch = function fetch(url, options = {}, onProgress) {
 	return new Promise((resolve, reject) => {
 		const xhr = new XMLHttpRequest();
@@ -31,25 +29,6 @@ const fetch = function fetch(url, options = {}, onProgress) {
 	});
 };
 
-const getUploadURL = (config) => {
-	if (uploadURL) { return uploadURL; }
-
-	let isHTTPS = true;
-	if (!isUndefined(config.isHTTPS)) { isHTTPS = !!config.isHTTPS; }
-	else {
-		try { isHTTPS = window.location.protocol.toLowerCase() === 'https:'; }
-		catch (err) {} // eslint-disable-line
-	}
-
-	const protocol = isHTTPS ? 'https://' : 'http://';
-
-	// uploadURL = isHTTPS ? '//up.qbox.me' : '//upload.qiniu.com';
-	uploadURL = zones[config.zone];
-	uploadURL = `${protocol}${uploadURL || zones.z0}`;
-
-	return uploadURL;
-};
-
 const defaultMapUptoken = (data) => (data.uptoken || data);
 const defaultMapResponseURL = (url) => ({ url });
 
@@ -59,6 +38,8 @@ const validateConfig = (config) => {
 
 		mapUptoken,
 		mapResponseURL,
+
+		zone,
 
 		bucket,
 		baseURL,
@@ -96,6 +77,15 @@ const validateConfig = (config) => {
 	config.bucket = bucket || name;
 	config.baseURL = baseURL || domain;
 
+	config.zone = zone || 'z0';
+
+	if (!zones[config.zone]) {
+		throw new Error(
+			`Zone only support one of ${Object.keys(zones).join(', ')}, ` +
+			`but received "${config.zone}"`,
+		);
+	}
+
 	return config;
 };
 
@@ -126,6 +116,21 @@ export default class TinyQiniu {
 		this._config = validateConfig(config);
 	}
 
+	_getUploadURL() {
+		if (this._uploadURL) { return this._uploadURL; }
+
+		const config = this._config;
+		let isHTTPS = true;
+		if (!isUndefined(config.isHTTPS)) { isHTTPS = !!config.isHTTPS; }
+		else {
+			try { isHTTPS = window.location.protocol.toLowerCase() === 'https:'; }
+			catch (err) {} // eslint-disable-line
+		}
+
+		const protocol = isHTTPS ? 'https://' : 'http://';
+		return (this._uploadURL = `${protocol}${zones[config.zone]}`);
+	}
+
 	uploadFile(file, options = {}) {
 		const { key, onProgress } = options;
 		return generateToken(this._config)
@@ -140,7 +145,7 @@ export default class TinyQiniu {
 
 				formData.append('scope', `${this._config.bucket}:${key}`);
 
-				return fetch(getUploadURL(this._config), {
+				return fetch(this._getUploadURL(), {
 					method: 'POST',
 					body: formData,
 				}, onProgress).then((data) => responseURL(this._config, data));
@@ -153,7 +158,7 @@ export default class TinyQiniu {
 
 		return generateToken(this._config)
 			.then((uptoken) => {
-				let fetchUrl = `${getUploadURL(this._config)}/putb64/-1`;
+				let fetchUrl = `${this._getUploadURL()}/putb64/-1`;
 				if (base64Key) {
 					fetchUrl = `${fetchUrl}/key/${base64Key}`;
 				}
