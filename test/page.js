@@ -19,6 +19,10 @@ export const createPage = async () => {
 
 		const status = await page.open(`http://localhost:${port}`);
 
+		page.on('onConsoleMessage', (msg) => {
+			console.log(msg);
+		});
+
 		if (status.toLowerCase() !== 'success') { throw new Error(status); }
 
 		return page;
