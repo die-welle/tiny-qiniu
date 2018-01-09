@@ -38,6 +38,7 @@ const validateConfig = (config) => {
 
 		mapUptoken,
 		mapResponseURL,
+		mapResponse,
 
 		zone,
 
@@ -52,8 +53,8 @@ const validateConfig = (config) => {
 		throw new Error('`bucket` is required');
 	}
 
-	if (!baseURL && !domain) {
-		throw new Error('`baseURL` is required');
+	if (!baseURL && !domain && !mapResponse) {
+		throw new Error('One of `baseURL` or `mapResponse` is required');
 	}
 
 	if (!uptoken && !uptokenUrl && !uptokenFunc) {
@@ -68,6 +69,10 @@ const validateConfig = (config) => {
 
 	if (!isFunction(mapUptoken)) {
 		config.mapUptoken = defaultMapUptoken;
+	}
+
+	if (mapResponseURL && mapResponse) {
+		throw new Error('Can NOT set both `mapResponseURL` and `mapResponse`');
 	}
 
 	if (!isFunction(mapResponseURL)) {
@@ -101,11 +106,13 @@ const generateToken = ({ uptoken, uptokenUrl, uptokenFunc, mapUptoken }) => {
 	}
 };
 
-const responseURL = (config, data) => {
+const resp = (config, data) => {
 	if (data.error) {
 		throw new Error(data.error);
 	}
-	const { baseURL, mapResponseURL } = config;
+	const { baseURL, mapResponseURL, mapResponse } = config;
+	if (isFunction(mapResponse)) { return mapResponse(data); }
+
 	const { hash, key } = data;
 	const url = `${baseURL}/${key || hash}`;
 	return mapResponseURL(url, hash, key, data);
@@ -148,7 +155,7 @@ export default class TinyQiniu {
 				return fetch(this._getUploadURL(), {
 					method: 'POST',
 					body: formData,
-				}, onProgress).then((data) => responseURL(this._config, data));
+				}, onProgress).then((data) => resp(this._config, data));
 			})
 		;
 	}
@@ -169,7 +176,7 @@ export default class TinyQiniu {
 						Authorization: `UpToken ${uptoken}`,
 					},
 					body: base64.split(',')[1],
-				}).then((data) => responseURL(this._config, data));
+				}).then((data) => resp(this._config, data));
 			})
 		;
 	}

@@ -247,6 +247,25 @@ const init = async () => {
 			assert.deepEqual(data, { hash, key });
 		});
 
+		it('mapResponse', async () => {
+			config.uptokenUrl = `${host}/uptoken`;
+			const selector = '#uploader';
+			const configStr = JSON.stringify(config);
+			await page.uploadFile(selector, imgFile);
+			const data = await page.evaluatePromise(
+				`function () {
+					var config = ${configStr};
+					config.mapResponse = function (data) {
+						return data;
+					};
+					var tinyQiniu = new window.TinyQiniu(config);
+					var file = document.querySelector("${selector}").files[0];
+					return tinyQiniu.uploadFile(file);
+				}`
+			);
+			assert.deepEqual(Object.keys(data), ['hash', 'key']);
+		});
+
 		after(() => {
 			closePage();
 			stopServer();
