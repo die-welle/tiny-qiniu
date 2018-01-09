@@ -39,7 +39,11 @@ import TinyQiniu from 'tiny-qiniu';
 
 const config = {
     bucket: 'my_bucket', // qiniu bucket name, requried
+
+    /* one of `baseURL` or `mapResponse` is required */
     baseURL: 'http://cdn.awesome.com', // qiniu bucket domain, requried
+
+    mapResponse: (data) => data, // a function to map final response data
 
     /* one of `uptoken`, `uptokenUrl`, `uptokenFunc` is required */
 
@@ -64,7 +68,7 @@ const config = {
 
     mapUptoken: (data) => data.uptoken || data, // Optional, a function to map uptoken when fetch uptoken completed
 
-    mapResponseURL: (url, hash, key) => url, // Optional, a function to map final url
+    mapResponseURL: (url, hash, key, data) => url, // Optional, a function to map final url
 };
 const tinyQiniu = new TinyQiniu(config);
 ```
