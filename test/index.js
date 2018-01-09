@@ -226,22 +226,25 @@ const init = async () => {
 			const selector = '#uploader';
 			const configStr = JSON.stringify(config);
 			await page.uploadFile(selector, imgFile);
-			const { customUrlName } = await page.evaluatePromise(
+			const { url, hash, key, data } = await page.evaluatePromise(
 				`function () {
 					var config = ${configStr};
-					config.mapResponseURL = function mapResponseURL(url) {
-						return { customUrlName: url };
+					config.mapResponseURL = function (url, hash, key, data) {
+						return { url: url, hash: hash, key: key, data: data };
 					};
 					var tinyQiniu = new window.TinyQiniu(config);
 					var file = document.querySelector("${selector}").files[0];
 					return tinyQiniu.uploadFile(file);
 				}`
 			);
-			const imageInfoUrl = `${customUrlName}?imageInfo`;
+			const imageInfoUrl = `${url}?imageInfo`;
 			const imgInfo = await fetch(imageInfoUrl).then((res) => res.json());
 			assert.equal(img.width, imgInfo.width);
 			assert.equal(img.height, imgInfo.height);
 			assert.equal(img.type, imgInfo.format);
+			assert.equal(typeof hash, 'string');
+			assert.equal(typeof key, 'string');
+			assert.deepEqual(data, { hash, key });
 		});
 
 		after(() => {

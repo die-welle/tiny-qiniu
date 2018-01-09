@@ -108,7 +108,7 @@ const responseURL = (config, data) => {
 	const { baseURL, mapResponseURL } = config;
 	const { hash, key } = data;
 	const url = `${baseURL}/${key || hash}`;
-	return mapResponseURL(url, hash, key);
+	return mapResponseURL(url, hash, key, data);
 };
 
 export default class TinyQiniu {
